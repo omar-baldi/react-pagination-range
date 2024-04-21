@@ -1,26 +1,23 @@
 import { useCallback, useMemo, useState } from "react";
-
-const DEFAULT_SIBLING_COUNT = 0;
-const DEFAULT_INITIAL_PAGE = 7;
-
-//TODO: function renaming to be more descriptive
-function getRanges(allPages: number[], activePage: number, siblingCount: number) {
-  return {
-    before: allPages.slice(0, Math.max(0, activePage - siblingCount - 1)),
-    current: allPages.slice(
-      Math.max(0, activePage - siblingCount - 1),
-      Math.min(activePage + siblingCount, allPages.length)
-    ),
-    after: allPages.slice(Math.min(activePage + siblingCount, allPages.length)),
-  };
-}
+import {
+  DEFAULT_BOUNDARY_COUNT,
+  DEFAULT_INITIAL_PAGE,
+  DEFAULT_SIBLING_COUNT,
+} from "../constants";
+import {
+  getFirstAndLastArrayElements,
+  getPagesDiffToLeftBoundary,
+  getPagesDiffToRightBoundary,
+} from "../helpers";
 
 export const usePaginationRange = ({
   totalAmountElements,
   siblingCount = DEFAULT_SIBLING_COUNT,
+  boundaryCount = DEFAULT_BOUNDARY_COUNT,
 }: {
   totalAmountElements: number;
   siblingCount?: number;
+  boundaryCount?: number;
 }) => {
   const [activePage, setActivePage] = useState<number>(DEFAULT_INITIAL_PAGE);
 
@@ -28,35 +25,45 @@ export const usePaginationRange = ({
     return [...Array(totalAmountElements)].map((_, i) => i + 1);
   }, [totalAmountElements]);
 
-  const range = useMemo(() => {
-    const ranges = getRanges(allPages, activePage, siblingCount);
-    const { before, current, after } = ranges;
+  const activePageRangeWithSiblings = useMemo<number[]>(() => {
+    const startIndex = Math.max(0, activePage - siblingCount - 1);
+    const endIndex = Math.min(activePage + siblingCount, allPages.length);
+    return allPages.slice(startIndex, endIndex);
+  }, [allPages, activePage, siblingCount]);
 
-    /**
-     * Making sure to return the whole array range
-     * if for both sides from either the first page/last page
-     * to the active page there are less than 2 elements.
-     * Meaning that there's no need to render the 3 dots
-     * if there is only one element in between.
-     */
-    if (before.length <= 2 && after.length <= 2) {
+  const range = useMemo(() => {
+    const siblings = getFirstAndLastArrayElements(activePageRangeWithSiblings);
+    const [leftestSibling, rightestSibling] = siblings;
+
+    const pagesDiffLeft = getPagesDiffToLeftBoundary({
+      boundaryCount,
+      leftestSibling,
+    });
+
+    const pagesDiffRight = getPagesDiffToRightBoundary({
+      boundaryCount,
+      rightestSibling,
+      totalAmountPages: allPages.length,
+    });
+
+    if (pagesDiffLeft < 2 && pagesDiffRight < 2) {
       return allPages;
     }
 
     const activePageWithSiblingsLength = siblingCount * 2 + 1;
-    const shouldAddBeforeDots = before.length > 2;
-    const shouldAddAfterDots = after.length > 2;
+    const shouldAddBeforeDots = pagesDiffLeft >= 2;
+    const shouldAddAfterDots = pagesDiffRight >= 2;
 
     return [
       ...(shouldAddBeforeDots
-        ? [1, "..."]
-        : allPages.slice(0, activePageWithSiblingsLength + 2)),
-      ...(shouldAddBeforeDots && shouldAddAfterDots ? current : []),
+        ? [...allPages.slice(0, boundaryCount), "..."]
+        : allPages.slice(0, activePageWithSiblingsLength + boundaryCount + 1)),
+      ...(shouldAddBeforeDots && shouldAddAfterDots ? activePageRangeWithSiblings : []),
       ...(shouldAddAfterDots
-        ? ["...", allPages.length]
-        : allPages.slice(-(activePageWithSiblingsLength + 2))),
+        ? ["...", ...allPages.slice(-boundaryCount)]
+        : allPages.slice(-(activePageWithSiblingsLength + boundaryCount + 1))),
     ];
-  }, [activePage, allPages, siblingCount]);
+  }, [activePageRangeWithSiblings, allPages, siblingCount, boundaryCount]);
 
   const decrementPage = useCallback(() => {
     setActivePage((prevActivePage) => {
