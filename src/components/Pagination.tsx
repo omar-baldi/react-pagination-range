@@ -17,13 +17,14 @@ type Props = {
 export default function Pagination({
   variant,
   size,
-  showFirstButton,
-  showLastButton,
-  hidePrevButton,
-  hideNextButton,
+  showFirstButton = false,
+  showLastButton = false,
+  hidePrevButton = false,
+  hideNextButton = false,
   ...rangeConfig
 }: Props) {
-  const { range, activePage } = usePaginationRange(rangeConfig);
+  const { range, activePage, decrementPage, incrementPage } =
+    usePaginationRange(rangeConfig);
 
   const pagesElements = range.map((page, index) => {
     const isCurrentPageSelected = activePage === page;
@@ -48,5 +49,11 @@ export default function Pagination({
     );
   });
 
-  return pagesElements;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "3rem" }}>
+      {!hidePrevButton && <button onClick={decrementPage}>Prev</button>}
+      <div style={{ display: "flex", alignItems: "center" }}>{pagesElements}</div>
+      {!hideNextButton && <button onClick={incrementPage}>Next</button>}
+    </div>
+  );
 }
