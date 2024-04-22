@@ -76,16 +76,19 @@ export const usePaginationRange = ({
     });
   }, []);
 
-  function goToSpecificPage(newPage: number) {
-    setActivePage((prevActivePage) => {
-      if (!allPages.includes(newPage)) {
-        console.warn("Current page is not amongst valid pagination range - ", newPage);
-        return prevActivePage;
-      }
+  const goToSpecificPage = useCallback(
+    (newPage: number) => {
+      setActivePage((prevActivePage) => {
+        if (!allPages.includes(newPage)) {
+          console.warn("Current page is not amongst valid pagination range - ", newPage);
+          return prevActivePage;
+        }
 
-      return newPage;
-    });
-  }
+        return newPage;
+      });
+    },
+    [allPages]
+  );
 
   const incrementPage = useCallback(() => {
     setActivePage((prevActivePage) => {
