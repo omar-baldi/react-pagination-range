@@ -6,18 +6,19 @@ import {
   getPagesDiffToRightBoundary,
 } from "../helpers";
 
+export type PaginationRangeConfigOptions = {
+  totalAmountElements: number;
+  siblingCount?: number;
+  boundaryCount?: number;
+  initialPage?: number;
+};
+
 export const usePaginationRange = ({
   totalAmountElements,
   siblingCount = DEFAULT_SIBLING_COUNT,
   boundaryCount = DEFAULT_BOUNDARY_COUNT,
   initialPage = FIRST_PAGE,
-}: {
-  totalAmountElements: number;
-  siblingCount?: number;
-  boundaryCount?: number;
-  initialPage?: number;
-  onPageChange?: () => void;
-}) => {
+}: PaginationRangeConfigOptions) => {
   const [activePage, setActivePage] = useState<number>(initialPage);
 
   /**
