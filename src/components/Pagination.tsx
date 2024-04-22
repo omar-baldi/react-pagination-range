@@ -23,7 +23,7 @@ export default function Pagination({
   hideNextButton = false,
   ...rangeConfig
 }: Props) {
-  const { range, activePage, decrementPage, incrementPage } =
+  const { range, activePage, decrementPage, incrementPage, goToFirstPage, goToLastPage } =
     usePaginationRange(rangeConfig);
 
   const pagesElements = range.map((page, index) => {
@@ -37,7 +37,6 @@ export default function Pagination({
             style={{
               margin: "0 0.5rem",
               backgroundColor: isCurrentPageSelected ? "grey" : "initial",
-              border: "1px solid",
             }}
           >
             {page}
@@ -51,9 +50,17 @@ export default function Pagination({
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "3rem" }}>
-      {!hidePrevButton && <button onClick={decrementPage}>Prev</button>}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        {showFirstButton && <button onClick={goToFirstPage}>First page</button>}
+        {!hidePrevButton && <button onClick={decrementPage}>Prev</button>}
+      </div>
+
       <div style={{ display: "flex", alignItems: "center" }}>{pagesElements}</div>
-      {!hideNextButton && <button onClick={incrementPage}>Next</button>}
+
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        {!hideNextButton && <button onClick={incrementPage}>Next</button>}
+        {showLastButton && <button onClick={goToLastPage}>Last page</button>}
+      </div>
     </div>
   );
 }

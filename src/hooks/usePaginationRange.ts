@@ -91,6 +91,14 @@ export const usePaginationRange = ({
     [allPages]
   );
 
+  const goToFirstPage = useCallback(() => {
+    setActivePage(FIRST_PAGE);
+  }, []);
+
+  const goToLastPage = useCallback(() => {
+    setActivePage(allPages.length);
+  }, [allPages]);
+
   const incrementPage = useCallback(() => {
     setActivePage((prevActivePage) => {
       return Math.min(prevActivePage + 1, allPages.length);
@@ -101,6 +109,8 @@ export const usePaginationRange = ({
     range,
     activePage,
     goToSpecificPage,
+    goToFirstPage,
+    goToLastPage,
     decrementPage,
     incrementPage,
   };
