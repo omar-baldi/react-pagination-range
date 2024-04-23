@@ -1,5 +1,6 @@
 import { usePaginationRange } from "@/hooks/usePaginationRange";
 import { act, renderHook } from "@testing-library/react";
+import { vi } from "vitest";
 
 describe("usePaginationRange", () => {
   it("should custom hook be initialized with default values", () => {
@@ -81,6 +82,41 @@ describe("usePaginationRange", () => {
       act(() => result.current.decrementPage());
       expect(result.current.activePage).toBe(1);
       expect(result.current.range).toEqual([1, 2, 3, 4, 5, "...", 20]);
+    });
+  });
+
+  describe("When navigating to specific page", () => {
+    it("should update active page and range if page is within range", () => {
+      const { result } = renderHook(() =>
+        usePaginationRange({
+          totalAmountElements: 10,
+          siblingCount: 1,
+        })
+      );
+
+      expect(result.current.activePage).toBe(1);
+      expect(result.current.range).toEqual([1, 2, 3, 4, 5, "...", 10]);
+      act(() => result.current.goToSpecificPage(5));
+      expect(result.current.activePage).toBe(5);
+      expect(result.current.range).toEqual([1, "...", 4, 5, 6, "...", 10]);
+    });
+
+    it("should not update active page and range if page is not within range", () => {
+      const warn = vi.spyOn(console, "warn");
+
+      const { result } = renderHook(() =>
+        usePaginationRange({
+          totalAmountElements: 10,
+          siblingCount: 1,
+        })
+      );
+
+      expect(result.current.activePage).toBe(1);
+      expect(result.current.range).toEqual([1, 2, 3, 4, 5, "...", 10]);
+      act(() => result.current.goToSpecificPage(11));
+      expect(warn).toHaveBeenCalledWith("Current page not in valid pagination range");
+      expect(result.current.activePage).toBe(1);
+      expect(result.current.range).toEqual([1, 2, 3, 4, 5, "...", 10]);
     });
   });
 });
