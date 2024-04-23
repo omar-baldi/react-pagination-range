@@ -50,4 +50,37 @@ describe("usePaginationRange", () => {
       expect(result.current.range).toEqual([1, "...", 16, 17, 18, 19, 20]);
     });
   });
+
+  describe("When decrementing the page", () => {
+    it("should update active page and range if page is within range", () => {
+      const { result } = renderHook(() =>
+        usePaginationRange({
+          totalAmountElements: 20,
+          initialPage: 10,
+          siblingCount: 1,
+        })
+      );
+
+      expect(result.current.activePage).toBe(10);
+      expect(result.current.range).toEqual([1, "...", 9, 10, 11, "...", 20]);
+      act(() => result.current.decrementPage());
+      expect(result.current.activePage).toBe(9);
+      expect(result.current.range).toEqual([1, "...", 8, 9, 10, "...", 20]);
+    });
+
+    it("should not update active page and range when being at the first page", () => {
+      const { result } = renderHook(() =>
+        usePaginationRange({
+          totalAmountElements: 20,
+          siblingCount: 1,
+        })
+      );
+
+      expect(result.current.activePage).toBe(1);
+      expect(result.current.range).toEqual([1, 2, 3, 4, 5, "...", 20]);
+      act(() => result.current.decrementPage());
+      expect(result.current.activePage).toBe(1);
+      expect(result.current.range).toEqual([1, 2, 3, 4, 5, "...", 20]);
+    });
+  });
 });

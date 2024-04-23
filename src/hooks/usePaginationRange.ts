@@ -1,10 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DEFAULT_BOUNDARY_COUNT, DEFAULT_SIBLING_COUNT, FIRST_PAGE } from "../constants";
 import {
   getFirstAndLastArrayElements,
   getPagesDiffToLeftBoundary,
   getPagesDiffToRightBoundary,
-} from "../helpers";
+} from "../helpers/pages";
 
 export type PaginationRangeConfigOptions = {
   totalAmountElements: number;
@@ -13,6 +13,7 @@ export type PaginationRangeConfigOptions = {
   initialPage?: number;
 };
 
+//!NOTE: to refactor hook for boundaryCount = 0 -> we do not render the leftest and rightest page in the range
 export const usePaginationRange = ({
   totalAmountElements,
   siblingCount = DEFAULT_SIBLING_COUNT,
@@ -21,11 +22,11 @@ export const usePaginationRange = ({
 }: PaginationRangeConfigOptions) => {
   const [activePage, setActivePage] = useState<number>(initialPage);
 
-  /**
-   * !NOTE: to test this in unit test
-   * There could be a scenario where the activePage is greater that
-   * the totalAmountElements, so greater than "allPages" length.
-   */
+  useEffect(() => {
+    setActivePage((prevActivePage) =>
+      prevActivePage > totalAmountElements ? FIRST_PAGE : prevActivePage
+    );
+  }, [totalAmountElements]);
 
   const allPages = useMemo(() => {
     return [...Array(totalAmountElements)].map((_, i) => i + 1);
@@ -73,7 +74,7 @@ export const usePaginationRange = ({
 
   const decrementPage = useCallback(() => {
     setActivePage((prevActivePage) => {
-      return Math.max(0, prevActivePage - 1);
+      return Math.max(FIRST_PAGE, prevActivePage - 1);
     });
   }, []);
 
@@ -81,7 +82,7 @@ export const usePaginationRange = ({
     (newPage: number) => {
       setActivePage((prevActivePage) => {
         if (!allPages.includes(newPage)) {
-          console.warn("Current page is not amongst valid pagination range - ", newPage);
+          console.warn("Current page not in valid pagination range");
           return prevActivePage;
         }
 
