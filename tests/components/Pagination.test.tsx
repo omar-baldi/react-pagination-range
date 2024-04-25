@@ -94,4 +94,46 @@ describe("Pagination", () => {
       expect(nextPageButton).toBeDisabled();
     });
   });
+
+  describe("Navigation buttons rendering based on props", () => {
+    it("should render both previous and next navigation buttons", () => {
+      const wrapper = render(
+        <Pagination totalAmountElements={20} siblingCount={1} initialPage={6} />
+      );
+
+      const prevPageButton = wrapper.getByTestId("prev-page-button");
+      const nextPageButton = wrapper.getByTestId("next-page-button");
+
+      expect(prevPageButton).toBeInTheDocument();
+      expect(nextPageButton).toBeInTheDocument();
+    });
+
+    it("should not render previous navigation button if prop 'hidePrevButton' is set to true", () => {
+      const wrapper = render(
+        <Pagination
+          totalAmountElements={20}
+          siblingCount={1}
+          initialPage={6}
+          hidePrevButton
+        />
+      );
+
+      const prevPageButton = wrapper.queryByTestId("prev-page-button");
+      expect(prevPageButton).toBeNull();
+    });
+
+    it("should not render next navigation button if prop 'hideNextButton' is set to true", () => {
+      const wrapper = render(
+        <Pagination
+          totalAmountElements={20}
+          siblingCount={1}
+          initialPage={6}
+          hideNextButton
+        />
+      );
+
+      const nextPageButton = wrapper.queryByTestId("next-page-button");
+      expect(nextPageButton).toBeNull();
+    });
+  });
 });
