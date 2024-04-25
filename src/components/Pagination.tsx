@@ -1,5 +1,6 @@
 /* eslint-disable */
 import React from "react";
+import { FIRST_PAGE } from "../constants";
 import {
   type PaginationRangeConfigOptions,
   usePaginationRange,
@@ -14,17 +15,45 @@ type Props = {
   hideNextButton?: boolean;
 } & PaginationRangeConfigOptions;
 
-export default function Pagination({
-  variant,
-  size,
-  showFirstButton = false,
-  showLastButton = false,
-  hidePrevButton = false,
-  hideNextButton = false,
-  ...rangeConfig
-}: Props) {
-  const { range, activePage, decrementPage, incrementPage, goToFirstPage, goToLastPage } =
-    usePaginationRange(rangeConfig);
+function separateProps(props: Props) {
+  const {
+    variant,
+    size,
+    showFirstButton,
+    showLastButton,
+    hidePrevButton,
+    hideNextButton,
+    ...rangeConfig
+  } = props;
+
+  return {
+    style: {
+      variant,
+      size,
+    },
+    navigation: {
+      showFirstButton,
+      showLastButton,
+      hidePrevButton,
+      hideNextButton,
+    },
+    rangeHookConfig: rangeConfig,
+  };
+}
+
+export default function Pagination(props: Props) {
+  const separatedProps = separateProps(props);
+  const { rangeHookConfig, navigation } = separatedProps;
+
+  const {
+    range,
+    activePage,
+    decrementPage,
+    incrementPage,
+    goToFirstPage,
+    goToLastPage,
+    goToSpecificPage,
+  } = usePaginationRange(rangeHookConfig);
 
   const pagesElements = range.map((page, index) => {
     const isCurrentPageSelected = activePage === page;
@@ -34,6 +63,8 @@ export default function Pagination({
       <React.Fragment key={key}>
         {typeof page === "number" ? (
           <button
+            data-testid={`button-page button-page-${page}`}
+            onClick={() => goToSpecificPage(page)}
             style={{
               margin: "0 0.5rem",
               backgroundColor: isCurrentPageSelected ? "grey" : "initial",
@@ -42,25 +73,48 @@ export default function Pagination({
             {page}
           </button>
         ) : (
-          <div>{page}</div>
+          <div data-testid="dots">{page}</div>
         )}
       </React.Fragment>
     );
   });
 
+  const isPrevButtonDisabled = activePage === FIRST_PAGE;
+  const isNextButtonDisabled = activePage === rangeHookConfig.totalAmountElements;
+
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "3rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        {showFirstButton && <button onClick={goToFirstPage}>First page</button>}
-        {!hidePrevButton && <button onClick={decrementPage}>Prev</button>}
-      </div>
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: "3rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          {navigation.showFirstButton && (
+            <button onClick={goToFirstPage}>First page</button>
+          )}
+          {!navigation.hidePrevButton && (
+            <button
+              data-testid="prev-page-button"
+              disabled={isPrevButtonDisabled}
+              onClick={decrementPage}
+            >
+              Prev
+            </button>
+          )}
+        </div>
 
-      <div style={{ display: "flex", alignItems: "center" }}>{pagesElements}</div>
+        <div style={{ display: "flex", alignItems: "center" }}>{pagesElements}</div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        {!hideNextButton && <button onClick={incrementPage}>Next</button>}
-        {showLastButton && <button onClick={goToLastPage}>Last page</button>}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          {!navigation.hideNextButton && (
+            <button
+              data-testid="next-page-button"
+              disabled={isNextButtonDisabled}
+              onClick={incrementPage}
+            >
+              Next
+            </button>
+          )}
+          {navigation.showLastButton && <button onClick={goToLastPage}>Last page</button>}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
