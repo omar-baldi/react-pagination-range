@@ -5,7 +5,7 @@ export function getPagesDiffToLeftBoundary(p: {
   boundaryCount: number;
 }) {
   const leftSideFirstPageWithBoundary = FIRST_PAGE + p.boundaryCount;
-  return p.leftestSibling - leftSideFirstPageWithBoundary;
+  return Math.max(0, p.leftestSibling - leftSideFirstPageWithBoundary);
 }
 
 export function getPagesDiffToRightBoundary(p: {
@@ -14,7 +14,7 @@ export function getPagesDiffToRightBoundary(p: {
   boundaryCount: number;
 }) {
   const rightSideFirstPageWithBoundary = p.totalAmountPages - p.boundaryCount;
-  return rightSideFirstPageWithBoundary - p.rightestSibling;
+  return Math.max(0, rightSideFirstPageWithBoundary - p.rightestSibling);
 }
 
 export function getFirstAndLastArrayElements<T>(arr: T[]) {

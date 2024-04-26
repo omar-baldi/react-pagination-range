@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DEFAULT_BOUNDARY_COUNT, DEFAULT_SIBLING_COUNT, FIRST_PAGE } from "../constants";
+import {
+  DEFAULT_BOUNDARY_COUNT,
+  DEFAULT_SIBLING_COUNT,
+  FIRST_PAGE,
+  THRESHOLD_PAGE_COUNT,
+} from "../constants";
 import {
   getFirstAndLastArrayElements,
   getPagesDiffToLeftBoundary,
@@ -13,9 +18,9 @@ export type PaginationRangeConfigOptions = {
   initialPage?: number;
 };
 
-//!NOTE: to refactor hook for boundaryCount = 0 -> we do not render the leftest and rightest page in the range
 export const usePaginationRange = ({
   totalAmountElements,
+  //!NOTE: to refactor hook for boundaryCount = 0 -> we do not render the leftest and rightest page in the range
   siblingCount = DEFAULT_SIBLING_COUNT,
   boundaryCount = DEFAULT_BOUNDARY_COUNT,
   initialPage = FIRST_PAGE,
@@ -32,6 +37,7 @@ export const usePaginationRange = ({
     return [...Array(totalAmountElements)].map((_, i) => i + 1);
   }, [totalAmountElements]);
 
+  //TODO: move to "helpers" folder and unit test
   const activePageRangeWithSiblings = useMemo<number[]>(() => {
     const startIndex = Math.max(0, activePage - siblingCount - 1);
     const endIndex = Math.min(activePage + siblingCount, allPages.length);
@@ -39,27 +45,32 @@ export const usePaginationRange = ({
   }, [allPages, activePage, siblingCount]);
 
   const range = useMemo(() => {
+    const activePageWithSiblingsLength = siblingCount * 2 + 1;
     const siblings = getFirstAndLastArrayElements(activePageRangeWithSiblings);
     const [leftestSibling, rightestSibling] = siblings;
 
+    //TODO: refactoring logic for calculating pages diff
     const pagesDiffLeft = getPagesDiffToLeftBoundary({
       boundaryCount,
       leftestSibling,
     });
 
+    //TODO: refactoring logic for calculating pages diff
     const pagesDiffRight = getPagesDiffToRightBoundary({
       boundaryCount,
       rightestSibling,
       totalAmountPages: allPages.length,
     });
 
-    if (pagesDiffLeft < 2 && pagesDiffRight < 2) {
+    if (
+      allPages.length - (activePageWithSiblingsLength + boundaryCount + 1) <=
+      THRESHOLD_PAGE_COUNT
+    ) {
       return allPages;
     }
 
-    const activePageWithSiblingsLength = siblingCount * 2 + 1;
-    const shouldAddBeforeDots = pagesDiffLeft >= 2;
-    const shouldAddAfterDots = pagesDiffRight >= 2;
+    const shouldAddBeforeDots = pagesDiffLeft >= THRESHOLD_PAGE_COUNT;
+    const shouldAddAfterDots = pagesDiffRight >= THRESHOLD_PAGE_COUNT;
 
     return [
       ...(shouldAddBeforeDots
