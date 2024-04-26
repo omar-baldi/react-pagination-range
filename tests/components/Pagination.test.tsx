@@ -1,8 +1,9 @@
-/* eslint-disable */
 import Pagination from "@/components/Pagination";
 import { FIRST_PAGE } from "@/constants";
+import { usePaginationRange } from "@/hooks/usePaginationRange";
 import "@testing-library/jest-dom";
-import { fireEvent, render, RenderResult } from "@testing-library/react";
+import { fireEvent, render, type RenderResult } from "@testing-library/react";
+import { useState } from "react";
 
 function extractPagesButtonElements(wrapper: RenderResult, pagesArr: number[]) {
   return pagesArr.map((page) => wrapper.queryByTestId(`button-page button-page-${page}`));
@@ -14,6 +15,36 @@ function simulatePageClick(wrapper: RenderResult, page: number) {
   });
 
   fireEvent.click(firstPageButton);
+}
+
+function MockComponentWithPaginationRangeHook({
+  initialTotalAmountElements,
+  initialPage,
+}: {
+  initialTotalAmountElements: number;
+  initialPage?: number;
+}) {
+  const [totalAmountElements, setTotalAmountElements] = useState<number>(
+    initialTotalAmountElements
+  );
+
+  const { activePage, range } = usePaginationRange({
+    totalAmountElements,
+    initialPage,
+  });
+
+  return (
+    <>
+      <button
+        data-testid="button-change-elements-amount"
+        onClick={() => setTotalAmountElements(5)}
+      >
+        Change total amount elements
+      </button>
+      <div data-testid="current-range">{range}</div>;
+      <div data-testid="active-page">{activePage}</div>;
+    </>
+  );
 }
 
 describe("Pagination", () => {
@@ -135,5 +166,23 @@ describe("Pagination", () => {
       const nextPageButton = wrapper.queryByTestId("next-page-button");
       expect(nextPageButton).toBeNull();
     });
+  });
+
+  it("should reset active page to first page if the previous active page is greater than new total amount of elements", () => {
+    const wrapper = render(
+      <MockComponentWithPaginationRangeHook
+        initialTotalAmountElements={20}
+        initialPage={18}
+      />
+    );
+
+    expect(wrapper.queryByTestId("current-range")).toHaveTextContent("1...181920");
+    expect(wrapper.queryByTestId("active-page")).toHaveTextContent("18");
+
+    const btn = wrapper.getByTestId("button-change-elements-amount");
+    fireEvent.click(btn);
+
+    expect(wrapper.queryByTestId("current-range")).toHaveTextContent("12345");
+    expect(wrapper.queryByTestId("active-page")).toHaveTextContent("1");
   });
 });
