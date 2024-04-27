@@ -21,3 +21,17 @@ export function getFirstAndLastArrayElements<T>(arr: T[]) {
   const { 0: firstElement, length, [length - 1]: lastElement } = arr;
   return [firstElement, lastElement];
 }
+
+export function getActivePageRangeWithSiblings({
+  activePage,
+  siblingCount,
+  allPages,
+}: {
+  activePage: number;
+  siblingCount: number;
+  allPages: number[];
+}) {
+  const startIndex = Math.max(0, activePage - siblingCount - 1);
+  const endIndex = Math.min(activePage + siblingCount, allPages.length);
+  return allPages.slice(startIndex, endIndex);
+}

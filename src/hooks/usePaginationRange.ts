@@ -6,6 +6,7 @@ import {
   THRESHOLD_PAGE_COUNT,
 } from "../constants";
 import {
+  getActivePageRangeWithSiblings,
   getFirstAndLastArrayElements,
   getPagesDiffToLeftBoundary,
   getPagesDiffToRightBoundary,
@@ -37,25 +38,22 @@ export const usePaginationRange = ({
     return [...Array(totalAmountElements)].map((_, i) => i + 1);
   }, [totalAmountElements]);
 
-  //TODO: move to "helpers" folder and unit test
-  const activePageRangeWithSiblings = useMemo<number[]>(() => {
-    const startIndex = Math.max(0, activePage - siblingCount - 1);
-    const endIndex = Math.min(activePage + siblingCount, allPages.length);
-    return allPages.slice(startIndex, endIndex);
-  }, [allPages, activePage, siblingCount]);
-
   const range = useMemo(() => {
-    const activePageWithSiblingsLength = siblingCount * 2 + 1;
-    const siblings = getFirstAndLastArrayElements(activePageRangeWithSiblings);
-    const [leftestSibling, rightestSibling] = siblings;
+    const activePageRangeWithSiblings = getActivePageRangeWithSiblings({
+      activePage,
+      siblingCount,
+      allPages,
+    });
 
-    //TODO: refactoring logic for calculating pages diff
+    const [leftestSibling, rightestSibling] = getFirstAndLastArrayElements(
+      activePageRangeWithSiblings
+    );
+
     const pagesDiffLeft = getPagesDiffToLeftBoundary({
       boundaryCount,
       leftestSibling,
     });
 
-    //TODO: refactoring logic for calculating pages diff
     const pagesDiffRight = getPagesDiffToRightBoundary({
       boundaryCount,
       rightestSibling,
@@ -63,7 +61,7 @@ export const usePaginationRange = ({
     });
 
     if (
-      allPages.length - (activePageWithSiblingsLength + boundaryCount + 1) <=
+      allPages.length - (activePageRangeWithSiblings.length + boundaryCount + 1) <=
       THRESHOLD_PAGE_COUNT
     ) {
       return allPages;
@@ -75,13 +73,13 @@ export const usePaginationRange = ({
     return [
       ...(shouldAddBeforeDots
         ? [...allPages.slice(0, boundaryCount), "..."]
-        : allPages.slice(0, activePageWithSiblingsLength + boundaryCount + 1)),
+        : allPages.slice(0, activePageRangeWithSiblings.length + boundaryCount + 1)),
       ...(shouldAddBeforeDots && shouldAddAfterDots ? activePageRangeWithSiblings : []),
       ...(shouldAddAfterDots
         ? ["...", ...allPages.slice(-boundaryCount)]
-        : allPages.slice(-(activePageWithSiblingsLength + boundaryCount + 1))),
+        : allPages.slice(-(activePageRangeWithSiblings.length + boundaryCount + 1))),
     ];
-  }, [activePageRangeWithSiblings, allPages, siblingCount, boundaryCount]);
+  }, [activePage, allPages, siblingCount, boundaryCount]);
 
   const decrementPage = useCallback(() => {
     setActivePage((prevActivePage) => {
