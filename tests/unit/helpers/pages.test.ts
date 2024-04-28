@@ -1,4 +1,5 @@
 import {
+  createRange,
   getActivePageRangeWithSiblings,
   getPagesDiffToLeftBoundary,
 } from "@/helpers/pages";
@@ -20,7 +21,7 @@ describe("pages", () => {
     );
   });
 
-  describe.skip("getActivePageRangeWithSiblings", () => {
+  describe("getActivePageRangeWithSiblings", () => {
     it.each([
       [{ activePage: 6, siblingCount: 1, allPagesCount: 20, expectedRange: [5, 6, 7] }],
       [{ activePage: 1, siblingCount: 1, allPagesCount: 20, expectedRange: [1, 2] }],
@@ -41,5 +42,42 @@ describe("pages", () => {
         expect(range).toEqual(expectedRange);
       }
     );
+  });
+
+  describe("createRange", () => {
+    it.each([
+      [
+        {
+          extremes: [1, 10],
+          includeExtremes: true,
+          expectedRange: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        },
+      ],
+      [
+        {
+          extremes: [1, 10],
+          includeExtremes: false,
+          expectedRange: [2, 3, 4, 5, 6, 7, 8, 9],
+        },
+      ],
+      [
+        {
+          extremes: [5, 12],
+          includeExtremes: true,
+          expectedRange: [5, 6, 7, 8, 9, 10, 11, 12],
+        },
+      ],
+      [
+        {
+          extremes: [5, 12],
+          includeExtremes: false,
+          expectedRange: [6, 7, 8, 9, 10, 11],
+        },
+      ],
+    ])("should return correct number range", (params) => {
+      const { extremes, includeExtremes, expectedRange } = params;
+      const range = createRange(extremes as [number, number], includeExtremes);
+      expect(range).toEqual(expectedRange);
+    });
   });
 });
