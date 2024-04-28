@@ -16,14 +16,25 @@ describe("pages", () => {
   });
 
   describe("getActivePageRangeWithSiblings", () => {
-    it("should return array of numbers containing active page with siblings", () => {
-      const range = getActivePageRangeWithSiblings({
-        activePage: 6,
-        siblingCount: 1,
-        allPagesCount: 20,
-      });
-
-      expect(range).toEqual([5, 6, 7]);
-    });
+    it.each([
+      [{ activePage: 6, siblingCount: 1, allPagesCount: 20, expectedRange: [5, 6, 7] }],
+      [{ activePage: 1, siblingCount: 1, allPagesCount: 20, expectedRange: [1, 2] }],
+      [{ activePage: 20, siblingCount: 1, allPagesCount: 20, expectedRange: [19, 20] }],
+      [
+        {
+          activePage: 6,
+          siblingCount: 3,
+          allPagesCount: 20,
+          expectedRange: [3, 4, 5, 6, 7, 8, 9],
+        },
+      ],
+    ])(
+      "should return correct range given current active page and siblingCount",
+      (params) => {
+        const { expectedRange, ...config } = params;
+        const range = getActivePageRangeWithSiblings(config);
+        expect(range).toEqual(expectedRange);
+      }
+    );
   });
 });

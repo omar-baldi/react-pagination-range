@@ -31,7 +31,7 @@ export function getActivePageRangeWithSiblings({
   siblingCount: number;
   allPagesCount: number;
 }) {
-  const startSibling = Math.max(0, activePage - siblingCount);
+  const startSibling = Math.max(FIRST_PAGE, activePage - siblingCount);
   const endSibling = Math.min(activePage + siblingCount, allPagesCount);
   return createRange([startSibling, endSibling]);
 }
