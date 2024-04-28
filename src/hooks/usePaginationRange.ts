@@ -42,7 +42,7 @@ export const usePaginationRange = ({
     const activePageRangeWithSiblings = getActivePageRangeWithSiblings({
       activePage,
       siblingCount,
-      allPages,
+      allPagesCount: allPages.length,
     });
 
     const [leftestSibling, rightestSibling] = getFirstAndLastArrayElements(

@@ -25,13 +25,23 @@ export function getFirstAndLastArrayElements<T>(arr: T[]) {
 export function getActivePageRangeWithSiblings({
   activePage,
   siblingCount,
-  allPages,
+  allPagesCount,
 }: {
   activePage: number;
   siblingCount: number;
-  allPages: number[];
+  allPagesCount: number;
 }) {
-  const startIndex = Math.max(0, activePage - siblingCount - 1);
-  const endIndex = Math.min(activePage + siblingCount, allPages.length);
-  return allPages.slice(startIndex, endIndex);
+  const startSibling = Math.max(0, activePage - siblingCount);
+  const endSibling = Math.min(activePage + siblingCount, allPagesCount);
+  return createRange([startSibling, endSibling]);
+}
+
+export function createRange(extremes: [number, number], extremesIncluded = true) {
+  const [start, end] = extremes;
+
+  if (start > end) return [];
+
+  return extremesIncluded
+    ? [...Array(end - start + 1)].map((_, i) => i + start)
+    : [...Array(end - start - 1)].map((_, i) => i + start + 1);
 }
