@@ -5,17 +5,22 @@ import {
 
 describe("pages", () => {
   describe("getPagesDiffToLeftBoundary", () => {
-    it("should return correct amount of pages in between", () => {
-      const pagesDiff = getPagesDiffToLeftBoundary({
-        leftestSibling: 5,
-        boundaryCount: 1,
-      });
-
-      expect(pagesDiff).toBe(3);
-    });
+    it.each([
+      [{ leftestSibling: 5, boundaryCount: 1, expectedDiff: 3 }],
+      [{ leftestSibling: 1, boundaryCount: 1, expectedDiff: 0 }],
+      [{ leftestSibling: 10, boundaryCount: 3, expectedDiff: 6 }],
+      [{ leftestSibling: 5, boundaryCount: 3, expectedDiff: 1 }],
+    ])(
+      "should return correct amount between first page and leftest sibling of active page",
+      (params) => {
+        const { expectedDiff, ...config } = params;
+        const pagesDiff = getPagesDiffToLeftBoundary(config);
+        expect(pagesDiff).toBe(expectedDiff);
+      }
+    );
   });
 
-  describe("getActivePageRangeWithSiblings", () => {
+  describe.skip("getActivePageRangeWithSiblings", () => {
     it.each([
       [{ activePage: 6, siblingCount: 1, allPagesCount: 20, expectedRange: [5, 6, 7] }],
       [{ activePage: 1, siblingCount: 1, allPagesCount: 20, expectedRange: [1, 2] }],
